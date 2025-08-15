@@ -1,10 +1,10 @@
-# CoreApp
+# CoreLink
 
-CoreApp transforms blockchain actions into shareable links for receiving tips, selling items, and accepting payments on the Core blockchain.
+CoreLink transforms blockchain actions into shareable links for receiving tips, selling items, and accepting payments on the Core blockchain (supporting both mainnet and testnet).
 
 ## 🚀 What It Does
 
-CoreApp allows creators and businesses to:
+CoreLink allows creators and businesses to:
 - **Receive Tips**: Generate shareable links for receiving cryptocurrency tips from your audience
 - **Sell Items**: Create payment links for selling digital or physical items with secure transactions
 - **Share Anywhere**: Share your blockchain action links on any platform - social media, websites, or messaging apps
@@ -13,11 +13,10 @@ CoreApp allows creators and businesses to:
 
 ### Tech Stack
 - **Frontend**: Next.js 14 with App Router, TypeScript, Tailwind CSS
-- **Blockchain**: Core Testnet (EVM-compatible Bitcoin L2)
+- **Blockchain**: Core Mainnet + Core Testnet (EVM-compatible Bitcoin L2)
 - **Wallet Integration**: RainbowKit + Wagmi for seamless wallet connections
-- **Database**: Supabase for action storage and metadata
-- **Styling**: Tailwind CSS with custom dark theme and animations
 - **State Management**: React hooks with TanStack Query for data fetching
+- **Database**: Supabase for action storage and metadata
 
 ### Core Components
 
@@ -36,46 +35,52 @@ https://yourapp.com/a/{action-type}-{short-id}
 - **No Data Loss**: Full blockchain data stored in database
 - **Customizable**: Easy to add new action types
 
-#### 2. **Database Schema (Supabase)**
-```sql
--- Actions table structure
-CREATE TABLE actions (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  short_id VARCHAR(20) UNIQUE NOT NULL,
-  action_type VARCHAR(50) NOT NULL,
-  recipient_address VARCHAR(42), -- For tips
-  tip_amount_eth DECIMAL(18,6), -- For tips
-  contract_address VARCHAR(42), -- For NFT sales
-  token_id VARCHAR(255), -- For NFT sales
-  price DECIMAL(18,6), -- For NFT sales
-  description TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
 
 ## 🔧 Technical Implementation
 
-### 1. **Core Integration**
+### 1. **Core Blockchain Integration**
 
 #### Chain Configuration (`lib/wagmi.ts`)
 ```typescript
+// Core Mainnet
+export const coreMainnet: Chain = {
+  id: 1116, // Core Mainnet Chain ID
+  name: 'Core',
+  nativeCurrency: {
+    name: 'Bitcoin',
+    symbol: 'CORE',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ['https://rpc.coredao.org/'] },
+  },
+  blockExplorers: {
+    default: { 
+      name: 'Core Explorer', 
+      url: 'https://scan.coredao.org' 
+    },
+  },
+  testnet: false,
+};
+
+// Core Testnet
 export const coreTestnet: Chain = {
   id: 1114, // Core Testnet Chain ID
   name: 'Core Testnet',
   nativeCurrency: {
     name: 'Bitcoin',
-    symbol: 'BTC', // Native symbol is BTC
+    symbol: 'CORE',
     decimals: 18,
   },
   rpcUrls: {
     default: { http: ['https://rpc.test2.btcs.network'] },
   },
-      blockExplorers: {
-      default: { 
-        name: 'Core Testnet Explorer', 
-        url: 'https://scan.test2.btcs.network' 
-      },
+  blockExplorers: {
+    default: { 
+      name: 'Core Testnet Explorer', 
+      url: 'https://scan.test2.btcs.network' 
     },
+  },
   testnet: true,
 };
 ```
@@ -84,14 +89,15 @@ export const coreTestnet: Chain = {
 - **EVM Compatibility**: Full Ethereum compatibility on Bitcoin L2
 - **Fast Transactions**: Sub-second finality
 - **Low Fees**: Cost-effective transactions
-- **Bitcoin Native**: Uses BTC as native currency
+- **Bitcoin Native**: Uses CORE as native currency
+- **Dual Network**: Support for both mainnet and testnet
 
 ### 2. **Action Types**
 
 #### Tip Actions
 - **Purpose**: Receive cryptocurrency tips
 - **Parameters**: `recipient_address`, `tip_amount_eth`, `description`
-- **Transaction**: Direct ETH transfer to recipient
+- **Transaction**: Direct CORE transfer to recipient
 
 #### NFT Sale Actions
 - **Purpose**: Sell NFTs with instant payment
@@ -124,36 +130,34 @@ POST /api/create-action
 #### Page Structure
 ```
 app/
-├── page.tsx                 # Landing page with animations
+├── page.tsx                 # Landing page with pixel font styling and animations
 ├── create-link/
-│   └── page.tsx            # Link creation form
+│   └── page.tsx            # Link creation form with dynamic validation
 ├── a/[data]/
-│   └── page.tsx            # Action execution page
+│   └── page.tsx            # Action execution page with wallet integration
 ├── api/
 │   ├── create-action/
 │   │   └── route.ts        # Action creation API
 │   └── execute/[id]/
 │       └── route.ts        # Action execution API
 └── components/
-    └── Header.tsx          # Navigation component
+    └── Header.tsx          # Navigation component with Core branding
 ```
 
 #### Key Features:
-- **Responsive Design**: Mobile-first approach
-- **Dark Theme**: Consistent dark UI with cyan accents
-- **Animations**: Smooth transitions and hover effects
+- **Modern UI**: Dark theme with orange/amber accents and glassmorphism effects
+- **Pixel Font Styling**: Eye-catching retro aesthetic for the CoreLink brand
 - **QR Code Generation**: Instant QR codes for sharing
-- **Real-time Status**: Transaction status updates
+- **Real-time Status**: Transaction status updates with live confirmation
+- **Responsive Design**: Mobile-first approach with touch optimization
+- **Icon Integration**: Lucide React icons instead of static images for better performance
 
 ### 5. **Wallet Integration**
 
 #### RainbowKit Configuration
 ```typescript
-// Custom dark theme
-darkTheme({
-  accentColor: '#38bdf8', // Cyan accent
-  borderRadius: 'medium',
-})
+// Multi-chain support with Core networks
+chains: [coreMainnet, coreTestnet], // Mainnet first, then testnet
 ```
 
 #### Supported Wallets:
@@ -180,9 +184,21 @@ darkTheme({
 
 ### Environment Variables
 ```bash
-# .env.local
+# Core Mainnet Configuration
+CORE_MAINNET_RPC_URL=https://rpc.coredao.org/
+CORE_MAINNET_CHAIN_ID=1116
+CORE_MAINNET_EXPLORER_URL=https://scan.coredao.org
+
+# Core Testnet Configuration
+CORE_TESTNET_RPC_URL=https://rpc.test2.btcs.network
+CORE_TESTNET_CHAIN_ID=1114
+CORE_TESTNET_EXPLORER_URL=https://scan.test2.btcs.network
+
+# Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# WalletConnect Configuration
 NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_project_id
 ```
 
@@ -190,7 +206,7 @@ NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_project_id
 ```bash
 # Clone repository
 git clone <repository-url>
-cd elinks
+cd core4
 
 # Install dependencies
 npm install
@@ -203,29 +219,6 @@ cp .env.example .env.local
 npm run dev
 ```
 
-### Database Setup
-1. Create Supabase project
-2. Run the database schema:
-```sql
--- Create actions table
-CREATE TABLE actions (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  short_id VARCHAR(20) UNIQUE NOT NULL,
-  action_type VARCHAR(50) NOT NULL,
-  recipient_address VARCHAR(42),
-  tip_amount_eth DECIMAL(18,6),
-  contract_address VARCHAR(42),
-  token_id VARCHAR(255),
-  price DECIMAL(18,6),
-  description TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create indexes for performance
-CREATE INDEX idx_actions_short_id ON actions(short_id);
-CREATE INDEX idx_actions_type ON actions(action_type);
-CREATE INDEX idx_actions_created_at ON actions(created_at);
-```
 
 ## 🚀 Deployment
 
@@ -236,8 +229,16 @@ CREATE INDEX idx_actions_created_at ON actions(created_at);
 
 ### Environment Variables for Production
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=your_production_supabase_url
+# Core Mainnet Configuration
+CORE_MAINNET_RPC_URL=https://rpc.coredao.org/
+CORE_MAINNET_CHAIN_ID=1116
+CORE_MAINNET_EXPLORER_URL=https://scan.coredao.org
+
+# Supabase Configuration
 SUPABASE_SERVICE_ROLE_KEY=your_production_service_role_key
+NEXT_PUBLIC_SUPABASE_URL=your_production_supabase_url
+
+# WalletConnect Configuration
 NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_production_project_id
 ```
 
@@ -246,7 +247,6 @@ NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_production_project_id
 - **Cryptographic Short IDs**: Random 12-character IDs for URL shortening
 - **Input Validation**: Server-side validation for all user inputs
 - **Rate Limiting**: API rate limiting to prevent abuse
-- **Secure Database**: Supabase with Row Level Security (RLS)
 - **HTTPS Only**: All production traffic over HTTPS
 
 ## 📱 Mobile Support
@@ -258,31 +258,13 @@ NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_production_project_id
 
 ## 🔄 Future Enhancements
 
-- **Multi-chain Support**: Support for other EVM chains
 - **Advanced NFT Features**: Batch sales, auctions, royalties
 - **Analytics Dashboard**: Track link performance and earnings
 - **Custom Domains**: White-label solutions for businesses
 - **Webhook Integration**: Real-time notifications for transactions
 - **Gas Optimization**: Smart gas estimation and optimization
+- **Multi-chain Expansion**: Support for additional EVM-compatible networks
 
-## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- **Documentation**: Check the code comments for detailed implementation
-- **Issues**: Report bugs and feature requests via GitHub Issues
-- **Discussions**: Join community discussions for help and ideas
-
----
 
 **Built with ❤️ for the Core ecosystem**

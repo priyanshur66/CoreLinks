@@ -99,7 +99,7 @@ export default function HomePage() {
          
           
           <h1 className="text-6xl md:text-7xl font-black bg-gradient-to-r from-orange-400 via-amber-500 to-yellow-400 bg-clip-text text-transparent mb-6 tracking-tighter drop-shadow-[0_0_30px_rgba(251,146,60,0.9)] animate-pulse" style={{ fontFamily: 'var(--font-pixel)' }}>
-            CoreLink
+            CoreLinks
           </h1>
           
           <div className="relative">
